@@ -1,4 +1,4 @@
-name: ci
+name: main
 on:
   push:
     branches:
@@ -7,9 +7,10 @@ on:
     branches:
       - master
 jobs:
-  build:
+  main:
     runs-on: ubuntu-latest
     steps:
+      - uses: ./.github/actions/setup-action
       - name: Checkout branch
         uses: actions/checkout@v2
 
