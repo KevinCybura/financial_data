@@ -1,9 +1,10 @@
 import os
 import time
+
 import prefect
-from prefect import task, Flow, Parameter
-from prefect.run_configs import LocalRun
+from prefect import Flow, Parameter, task
 from prefect.executors import LocalDaskExecutor
+from prefect.run_configs import LocalRun
 from prefect.storage import Local
 
 
