@@ -2,12 +2,12 @@ name: ci
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
+      - main
 jobs:
-  build:
+  ci:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
@@ -34,10 +34,14 @@ jobs:
       - name: Install dependencies
         run: poetry install
 
-      - name: Format
-        run: |
-          poetry run black --check .
-          poetry run isort --check .
+      - name: Black
+        run: poetry run black --check .
+
+      - name: Isort
+        run: poetry run isort --check .
+
+      - name: Mypy
+        run:  poetry run mypy financial_data flows --config-file mypy.ini
 
       - name: Test
         run: poetry run pytest -v --durations=0
