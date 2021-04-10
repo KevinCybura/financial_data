@@ -2,7 +2,9 @@ import os
 import time
 
 import prefect
-from prefect import Flow, Parameter, task
+from prefect import Flow
+from prefect import Parameter
+from prefect import task
 from prefect.executors import LocalDaskExecutor
 from prefect.run_configs import LocalRun
 from prefect.storage import Local
@@ -16,9 +18,7 @@ def say_hello(name):
     logger.info(f"{greeting}, {name}!")
 
 
-with Flow(
-    "hello-flow", storage=Local(stored_as_script=True, path="flows/hello_flow.py")
-) as flow:
+with Flow("hello-flow", storage=Local(stored_as_script=True, path="flows/hello_flow.py")) as flow:
     people = Parameter("people", default=["Kevin", "Andrew", "Marvin"])
     say_hello.map(people)
 
