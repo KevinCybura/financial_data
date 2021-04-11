@@ -908,8 +908,8 @@ heapdict = "*"
 
 [metadata]
 lock-version = "1.1"
-python-versions = "^3.9"
-content-hash = "dab203a7240fa2ee9ba707dcac0d5da6cb05a9178a1d03e833dfec31a60ec20b"
+python-versions = "^3.8"
+content-hash = "d7e31c395aa0896699f798f2237b6b862f69e763c19c76d19b08878e3e53a728"
 
 [metadata.files]
 alembic = [

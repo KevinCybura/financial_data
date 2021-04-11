@@ -13,13 +13,14 @@ from financial_data.models.symbol import SymbolTypes
 
 
 class IexSettings(BaseSettings):
-    token: SecretStr = Field(None, env=["token", "sandbox_token"])
+    token: SecretStr
     url: HttpUrl = Field("https://sandbox.iexapis.com")
-    _sandbox: bool
+    _sandbox: Optional[bool] = None
 
     class Config:
-        env_prefix = "iex"
+        env_prefix = "iex_"
         case_sensitive = False
+        prefect_secrets = False
 
 
 class Symbol(BaseModel):
@@ -40,4 +41,6 @@ class Symbol(BaseModel):
 
 
 class IexTask(Task):
-    credentials: IexSettings = Field(default_factory=IexSettings)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.secrets = IexSettings()
