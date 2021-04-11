@@ -1,12 +1,9 @@
-from typing import Any
-from typing import Union
-
 from pydantic import Field
+from pydantic import PostgresDsn
 from pydantic import SecretStr
 from pydantic import validator
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
-from sqlalchemy.engine.url import URL
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import sessionmaker
 
@@ -16,31 +13,28 @@ from financial_data.base import BaseSettings
 
 
 class PostgresSettings(BaseSettings):
-    drivername: str = "postgresql"
-    username: SecretStr = Field("fin_data", env="username")
-    password: SecretStr = Field("fin_data", env="password")
-    host: SecretStr = Field("localhost", env="host")
-    port: SecretStr = Field(5432, env="port")
-    database: SecretStr = Field("fin_data", env="database")
-    url: Union[URL, str] = ""
+    drivername: str = Field("postgresql")
+    user: SecretStr = Field("fin_data")
+    password: SecretStr = Field("fin_data")
+    host: SecretStr = Field("localhost")
+    port: SecretStr = Field(5432)
+    database: SecretStr = Field("fin_data")
+    url: PostgresDsn = Field(None)
 
     class Config:
-        env_prefix = "postgres"
+        env_prefix = "postgres_"
         case_sensitive = False
 
-    @validator("url", always=True)
-    def create_url(cls, v: Union[URL, str], values: dict, **kwargs: dict) -> Union[URL, str]:
-        if v:
-            return v
-
-        secret_values: dict[str, Any] = {}
-        for k, v in values.items():
-            if isinstance(v, SecretStr):
-                secret_values[k] = v.get_secret_value()
-            else:
-                secret_values[k] = v
-
-        return URL.create(**secret_values)
+    @validator("url")
+    def postgres_uri(cls, _v: PostgresDsn, values: dict) -> str:
+        return PostgresDsn.build(
+            scheme="postgresql",
+            user=values["user"].get_secret_value(),
+            password=values["password"].get_secret_value(),
+            host=values["host"].get_secret_value(),
+            port=values["port"].get_secret_value(),
+            path=f"/{values['database'].get_secret_value()}",
+        )
 
 
 class DataBase(BaseModel):

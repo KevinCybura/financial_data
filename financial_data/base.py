@@ -13,13 +13,10 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 
-class BaseModel(PydanticBaseModel):
-    pass
-
-
 class BaseSettings(PydanticBaseSettings):
     class Config:
         prefect_secrets = False
+        env_file = ".env"
 
         @classmethod
         def customise_sources(
@@ -28,10 +25,14 @@ class BaseSettings(PydanticBaseSettings):
             env_settings: SettingsSourceCallable,
             file_secret_settings: SettingsSourceCallable,
         ) -> Tuple[SettingsSourceCallable, ...]:
+
             if cls.prefect_secrets:
-                prefect_settings: SettingsSourceCallable = PrefectSettings()
-                return prefect_settings, init_settings, env_settings, file_secret_settings
+                return init_settings, env_settings, file_secret_settings, PrefectSettings()
             return init_settings, env_settings, file_secret_settings
+
+
+class BaseModel(PydanticBaseModel):
+    pass
 
 
 class PrefectSettings:
@@ -41,12 +42,13 @@ class PrefectSettings:
 
     def __call__(self, settings: PydanticBaseSettings) -> Dict[str, Any]:
         d: Dict[str, Optional[str]] = {}
-
         for field in settings.__fields__.values():
-            env_val: Optional[str] = None
             for env_name in field.field_info.extra["env_names"]:
-                env_val = PrefectSecret(env_name).run()
-
-            d[field.alias] = env_val
+                try:
+                    env_val = PrefectSecret(env_name).run()
+                    d[field.alias] = env_val
+                    break
+                except ValueError:
+                    pass
 
         return d

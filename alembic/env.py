@@ -4,7 +4,6 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
-from financial_data import models
 from financial_data.base import Base
 from financial_data.db import PostgresSettings
 
