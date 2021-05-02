@@ -1,22 +1,24 @@
 from typing import Any
-from typing import Callable
 from typing import Dict
 from typing import Optional
 from typing import Tuple
+from typing import Type
 
 from prefect.tasks.secrets import PrefectSecret
 from pydantic import BaseModel as PydanticBaseModel
 from pydantic import BaseSettings as PydanticBaseSettings
 from pydantic.env_settings import SettingsSourceCallable
+from sqlalchemy import Table
 from sqlalchemy.ext.declarative import declarative_base
 
-Base = declarative_base()
+ModelBase = declarative_base(name="ModelBase")
 
 
 class BaseSettings(PydanticBaseSettings):
     class Config:
         prefect_secrets = False
         env_file = ".env"
+        allow_population_by_field_name = True
 
         @classmethod
         def customise_sources(
@@ -32,7 +34,11 @@ class BaseSettings(PydanticBaseSettings):
 
 
 class BaseModel(PydanticBaseModel):
-    pass
+    class Config:
+        model: Type[Table] = None
+
+    def to_model(self) -> Table:
+        return self.Config.model(**self.dict())
 
 
 class PrefectSettings:
