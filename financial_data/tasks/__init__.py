@@ -18,12 +18,12 @@ class Task(PrefectTask):
         self.dataset = dataset
         if run_type == "record":
             record_run = self.run
-            self.run = functools.partial(self._run, func=record_run)
+            self.run = functools.partial(self._run, run=record_run)  # type: ignore
 
-    def _run(self, func: Callable, dataset: Iterable, **kwargs) -> Iterable:
+    def _run(self, run: Callable, dataset: Iterable, **kwargs) -> Iterable:
         def _map(data):
             try:
-                return func(data, **kwargs)
+                return run(data, **kwargs)
             except SkipRecordException as e:
                 return e
 

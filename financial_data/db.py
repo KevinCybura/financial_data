@@ -42,9 +42,8 @@ class DataBase:
         if not all([database, user, password, host, port]):
             self.settings = PostgresSettings()
         else:
-            self.settings: PostgresSettings = PostgresSettings(
-                database=database, user=user, password=password, host=host, port=port
-            )
+            self.settings = PostgresSettings(database=database, user=user, password=password, host=host, port=port)
+
         self.engine: Engine = create_engine(self.settings.url)
         session = sessionmaker()
         self.session: Session = session(bind=self.engine)

@@ -2,14 +2,15 @@ from typing import List
 from typing import Type
 
 from prefect.tasks.postgres import PostgresExecute
-from sqlalchemy import Table
 from sqlalchemy.dialects import postgresql
 
 from financial_data.db import DataBase
 from financial_data.db import PostgresSettings
 from financial_data.tasks import Task
 from financial_data.types import Col
+from financial_data.types import Table
 
+# mypy: ignore-errors
 
 # WIP
 class PostgresTask(PostgresExecute):

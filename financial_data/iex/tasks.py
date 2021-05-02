@@ -14,7 +14,7 @@ class IexApiTask(Task):
         self.params = {"token": self.secrets.token.get_secret_value()}
         super().__init__(**kwargs)
 
-    def run(self) -> List[dict]:
+    def run(self) -> List[dict]:  # type: ignore
         response = requests.get(self.url, params=self.params)
 
         if response.status_code != 200:
