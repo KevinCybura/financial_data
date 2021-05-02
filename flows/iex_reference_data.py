@@ -19,21 +19,21 @@ extract_exchanges = IexApiTask(name="extract-exchanges", endpoint="/ref-data/exc
 extract_us_exchanges = IexApiTask(endpoint="/ref-data/market/us/exchanges")
 
 
-class TransformCoreData(Task):
+class TransformRefData(Task):
     def run(self, data: dict, model: Type[BaseModel]) -> dict:
         return model(**data).dict()
 
 
-class SymbolsTransformCoreData(Task):
+class SymbolsTransformRefData(Task):
     def run(self, data: dict, model: Type[BaseModel]) -> dict:
         # TODO Make sure exchanges in DB.
         del data["exchange"]
         return model(**data).dict()
 
 
-transform_core_data = TransformCoreData(name="transform-core-data", slug="transform-core-data", run_type="record")
-symbol_transform_core_data = SymbolsTransformCoreData(
-    name="symbol-transform-core-data", slug="symbol-transform-core-data", run_type="record"
+transform_ref_data = TransformRefData(name="transform-ref-data", slug="transform-reference-data", run_type="record")
+symbol_transform_ref_data = SymbolsTransformRefData(
+    name="symbol-transform-ref-data", slug="symbol-transform-reference-data", run_type="record"
 )
 
 
@@ -42,12 +42,12 @@ load_exchanges = UpsertTask(
     model=Exchange, conflict_columns=[Exchange.exchange], slug="load-exchanges", name="load-exchanges"
 )
 
-with Flow("iex-core-data") as flow:
-    load_symbols(symbol_transform_core_data(dataset=extract_symbols(), model=IexSymbol))
-    load_exchanges(transform_core_data(dataset=extract_exchanges(), model=IexExchange))
+with Flow("iex-ref-data") as flow:
+    load_symbols(symbol_transform_ref_data(dataset=extract_symbols(), model=IexSymbol))
+    load_exchanges(transform_ref_data(dataset=extract_exchanges(), model=IexExchange))
 
 
-flow.run_config = LocalRun(labels=["iex-core-data"])
+flow.run_config = LocalRun(labels=["iex-ref-data"])
 
 if __name__ == "__main__":
     flow.run()
