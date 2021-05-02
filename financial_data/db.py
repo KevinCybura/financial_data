@@ -7,8 +7,6 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import sessionmaker
 
-from financial_data.base import Base
-from financial_data.base import BaseModel
 from financial_data.base import BaseSettings
 
 
@@ -19,9 +17,9 @@ class PostgresSettings(BaseSettings):
     host: SecretStr = Field("localhost")
     port: SecretStr = Field(5432)
     database: SecretStr = Field("fin_data")
-    url: PostgresDsn = Field(None)
+    url: PostgresDsn = None
 
-    class Config:
+    class Config(BaseSettings.Config):
         env_prefix = "postgres_"
         case_sensitive = False
 
@@ -37,28 +35,15 @@ class PostgresSettings(BaseSettings):
         )
 
 
-class DataBase(BaseModel):
-    engine: Engine
-    session: Session
-    _settings: PostgresSettings
-
-    class Config:
-        arbitrary_types_allowed = True
-
+class DataBase:
     def __init__(
-        self, database: str = None, user: str = None, password: str = None, host: str = None, port: str = None
+        self, *, database: str = None, user: str = None, password: str = None, host: str = None, port: str = None
     ):
+        if not all([database, user, password, host, port]):
+            self.settings = PostgresSettings()
+        else:
+            self.settings = PostgresSettings(database=database, user=user, password=password, host=host, port=port)
 
-        credentials = PostgresSettings(database=database, user=user, password=password, host=host, port=port)
-
-        engine = create_engine(credentials.url)
-
-        session = sessionmaker(engine)
-
-        Base.metadata.create_all(engine)
-
-        super().__init__(
-            engine=engine,
-            session=session,
-            _credentials=credentials,
-        )
+        self.engine: Engine = create_engine(self.settings.url)
+        session = sessionmaker()
+        self.session: Session = session(bind=self.engine)

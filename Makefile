@@ -13,7 +13,7 @@ fmt:
 
 prefect:
 	prefect server start --postgres-port 5433 -d
-	prefect agent local start
+	prefect agent local start -l iex-ref-data --no-hostname-label --show-flow-logs
 
 createdb:
 	createuser -s fin_data

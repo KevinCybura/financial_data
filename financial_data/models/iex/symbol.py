@@ -1,6 +1,9 @@
 import enum
+from datetime import date
 from typing import TYPE_CHECKING
+from typing import Optional
 
+from pydantic import Field
 from sqlalchemy import Boolean
 from sqlalchemy import Column
 from sqlalchemy import Date
@@ -11,10 +14,12 @@ from sqlalchemy import String
 from sqlalchemy.orm import backref
 from sqlalchemy.orm import relationship
 
-from financial_data.base import Base
+from financial_data.base import BaseModel
+from financial_data.base import ModelBase
+from financial_data.utils import to_camel
 
 if TYPE_CHECKING:
-    from financial_data.models import Exchange
+    from financial_data.models.iex import Exchange
 
 
 class SymbolTypes(enum.Enum):
@@ -29,15 +34,14 @@ class SymbolTypes(enum.Enum):
     ut = "ut"
     wi = "wi"
     wt = "wt"
-    empty = None
 
 
-class Symbol(Base):
+class Symbol(ModelBase):
     __tablename__ = "symbol"
 
     id = Column(Integer, primary_key=True)
     symbol = Column(String, unique=True)
-    exchange_id = Column(String, ForeignKey("exchange.exchange"))
+    exchange_id = Column(String, ForeignKey("exchange.exchange"), nullable=True)
     exchange: "Exchange" = relationship("Exchange", backref=backref("symbols"))
     name = Column(String)
     date = Column(Date)
@@ -52,3 +56,21 @@ class Symbol(Base):
 
     def __repr__(self):
         return f"<Symbol(symbol={self.symbol}, name={self.name}, id={self.id})>"
+
+
+class IexSymbol(BaseModel):
+    symbol: str
+    exchange_id: Optional[str] = Field(alias="exchange")
+    name: str
+    date: date
+    is_enabled: bool
+    region: str
+    currency: str
+    iex_id: Optional[str]
+    figi: Optional[str]
+    cik: Optional[str]
+    type: Optional[SymbolTypes]
+
+    class Config:
+        alias_generator = to_camel
+        model = Symbol

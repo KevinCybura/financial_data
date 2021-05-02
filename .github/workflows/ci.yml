@@ -41,7 +41,7 @@ jobs:
         run: poetry run isort --check .
 
       - name: Mypy
-        run:  poetry run mypy financial_data flows --config-file mypy.ini
+        run:  poetry run mypy financial_data --config-file mypy.ini
 
       - name: Test
         run: poetry run pytest -v --durations=0

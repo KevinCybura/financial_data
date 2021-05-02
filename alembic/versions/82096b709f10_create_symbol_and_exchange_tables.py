@@ -1,8 +1,8 @@
 """create symbol and exchange tables
 
-Revision ID: f6284d5718f5
+Revision ID: 82096b709f10
 Revises: 
-Create Date: 2021-04-10 14:56:43.326370
+Create Date: 2021-05-02 16:07:53.141537
 
 """
 import sqlalchemy as sa
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "f6284d5718f5"
+revision = "82096b709f10"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -54,9 +54,7 @@ def upgrade():
         sa.Column("cik", sa.String(), nullable=True),
         sa.Column(
             "type",
-            sa.Enum(
-                "ad", "cs", "cef", "et", "oef", "ps", "rt", "struct", "ut", "wi", "wt", "empty", name="symbol_type"
-            ),
+            sa.Enum("ad", "cs", "cef", "et", "oef", "ps", "rt", "struct", "ut", "wi", "wt", name="symbol_type"),
             nullable=True,
         ),
         sa.ForeignKeyConstraint(
