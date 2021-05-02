@@ -2,10 +2,10 @@ from sqlalchemy.sql.schema import Column
 from sqlalchemy.sql.sqltypes import Integer
 from sqlalchemy.sql.sqltypes import String
 
-from financial_data.base import Base
+from financial_data.base import ModelBase
 
 
-class UsExchange(Base):
+class UsExchange(ModelBase):
     __tablename__ = "us_exchange"
 
     id = Column(Integer, primary_key=True)

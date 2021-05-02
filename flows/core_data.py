@@ -1,63 +1,53 @@
-import prefect
-import requests
+from typing import Type
+
 from prefect import Flow
 from prefect.run_configs import LocalRun
 
-from financial_data.tasks import IexTask
+from financial_data.base import BaseModel
+from financial_data.iex.tasks import IexApiTask
+from financial_data.models.iex import Exchange
+from financial_data.models.iex import IexExchange
+from financial_data.models.iex.symbol import IexSymbol
+from financial_data.models.iex.symbol import Symbol
+from financial_data.tasks import Task
+from financial_data.tasks.database import UpsertTask
+
+extract_symbols = IexApiTask(name="extract-symbols", endpoint="/ref-data/symbols", slug="extract-symbols")
+
+extract_exchanges = IexApiTask(name="extract-exchanges", endpoint="/ref-data/exchanges", slug="extract-exchanges")
+
+extract_us_exchanges = IexApiTask(endpoint="/ref-data/market/us/exchanges")
 
 
-class ExtractSymbols(IexTask):
-    def run(self):
-        symbols = requests.get(
-            self.secrets.url + "/ref-data/symbols", params={"token": self.secrets.token.get_secret_value()}
-        )
-
-        if symbols.status_code != 200:
-            prefect.context.get("logger").error(f"Failed to get symbols, err={symbols.text}")
-
-        return symbols.json()
+class TransformCoreData(Task):
+    def run(self, data: dict, model: Type[BaseModel]) -> dict:
+        return model(**data).dict()
 
 
-extract_symbols = ExtractSymbols()
+class SymbolsTransformCoreData(Task):
+    def run(self, data: dict, model: Type[BaseModel]) -> dict:
+        # TODO Make sure exchanges in DB.
+        del data["exchange"]
+        return model(**data).dict()
 
 
-class ExtractExchanges(IexTask):
-    def run(self):
-        exchanges = requests.get(
-            self.secrets.url + "/ref-data/exchanges", params={"token": self.secrets.token.get_secret_value()}
-        )
-
-        if exchanges.status_code != 200:
-            prefect.context.get("logger").error(f"Failed to get exchanges, err={exchanges.text}")
-
-        return exchanges.json()
+transform_core_data = TransformCoreData(name="transform-core-data", slug="transform-core-data", run_type="record")
+symbol_transform_core_data = SymbolsTransformCoreData(
+    name="symbol-transform-core-data", slug="symbol-transform-core-data", run_type="record"
+)
 
 
-extract_exchanges = ExtractExchanges()
-
-
-class ExtractUsExchanges(IexTask):
-    def run(self):
-        exchanges = requests.get(
-            self.secrets.url + "/ref-data/market/us/exchanges",
-            params={"token": self.secrets.token.get_secret_value()},
-        )
-
-        if exchanges.status_code != 200:
-            prefect.context.get("logger").error(f"Failed to get us exchanges, err={exchanges.text}")
-
-        return exchanges.json()
-
-
-extract_us_exchanges = ExtractUsExchanges()
+load_symbols = UpsertTask(model=Symbol, conflict_columns=[Symbol.symbol], slug="load-symbols", name="load-symbols")
+load_exchanges = UpsertTask(
+    model=Exchange, conflict_columns=[Exchange.exchange], slug="load-exchanges", name="load-exchanges"
+)
 
 with Flow("iex-core-data") as flow:
-    extract_symbols()
-    extract_exchanges()
-    extract_us_exchanges()
+    load_symbols(symbol_transform_core_data(dataset=extract_symbols(), model=IexSymbol))
+    load_exchanges(transform_core_data(dataset=extract_exchanges(), model=IexExchange))
 
 
-flow.run_config = LocalRun(labels=["kevincybura-X570-UD"])
+flow.run_config = LocalRun(labels=["iex-core-data"])
 
 if __name__ == "__main__":
     flow.run()
