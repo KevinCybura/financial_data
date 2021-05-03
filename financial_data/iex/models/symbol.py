@@ -19,7 +19,7 @@ from financial_data.base import ModelBase
 from financial_data.utils import to_camel
 
 if TYPE_CHECKING:
-    from financial_data.models.iex import Exchange
+    from financial_data.iex.models import Exchange
 
 
 class SymbolTypes(enum.Enum):
@@ -54,7 +54,7 @@ class Symbol(ModelBase):
 
     type = Column(Enum(SymbolTypes, name="symbol_type"), nullable=True)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Symbol(symbol={self.symbol}, name={self.name}, id={self.id})>"
 
 

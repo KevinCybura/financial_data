@@ -11,7 +11,7 @@ from prefect.storage import Local
 
 
 @task()
-def say_hello(name):
+def say_hello(name: str) -> None:
     time.sleep(10)
     greeting = os.environ.get("GREETING")
     logger = prefect.context.get("logger")

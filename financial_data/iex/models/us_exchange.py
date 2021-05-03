@@ -17,5 +17,5 @@ class UsExchange(ModelBase):
     ref_id = Column(String)
     type = Column(String)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<UsExchange(name={self.name}, long_name={self.long_name}, id={self.id})>"

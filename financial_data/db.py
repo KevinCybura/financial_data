@@ -24,8 +24,8 @@ class PostgresSettings(BaseSettings):
         case_sensitive = False
 
     @validator("url")
-    def postgres_uri(cls, _v: PostgresDsn, values: dict) -> str:
-        return PostgresDsn.build(
+    def postgres_uri(cls, _v: PostgresDsn, values: dict) -> PostgresDsn:
+        return PostgresDsn.build(  # type: ignore
             scheme="postgresql",
             user=values["user"].get_secret_value(),
             password=values["password"].get_secret_value(),
