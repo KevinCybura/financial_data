@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any
 
 import requests
 from prefect import Task
@@ -7,14 +7,14 @@ from financial_data.iex import IexSettings
 
 
 class IexApiTask(Task):
-    def __init__(self, endpoint, **kwargs):
+    def __init__(self, endpoint: str, **kwargs: Any):
         self.secrets = IexSettings()
         self.endpoint = endpoint
         self.url = self.secrets.url + endpoint
         self.params = {"token": self.secrets.token.get_secret_value()}
         super().__init__(**kwargs)
 
-    def run(self) -> List[dict]:  # type: ignore
+    def run(self) -> Any:
         response = requests.get(self.url, params=self.params)
 
         if response.status_code != 200:

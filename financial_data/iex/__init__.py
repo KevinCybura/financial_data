@@ -4,6 +4,9 @@ from pydantic import SecretStr
 
 from financial_data.base import BaseSettings
 
+from .tasks import IexApiTask
+from .types import IexModel
+
 
 class IexSettings(BaseSettings):
     token: SecretStr

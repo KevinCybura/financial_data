@@ -6,7 +6,9 @@ from sqlalchemy import pool
 from alembic import context
 from financial_data.base import ModelBase
 from financial_data.db import PostgresSettings
-from financial_data.models.iex import *
+from financial_data.iex.models import Exchange
+from financial_data.iex.models import Symbol
+from financial_data.iex.models import UsExchange
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -3,12 +3,12 @@ from typing import Type
 from prefect import Flow
 from prefect.run_configs import LocalRun
 
-from financial_data.base import BaseModel
-from financial_data.iex.tasks import IexApiTask
-from financial_data.models.iex import Exchange
-from financial_data.models.iex import IexExchange
-from financial_data.models.iex.symbol import IexSymbol
-from financial_data.models.iex.symbol import Symbol
+from financial_data.iex import IexApiTask
+from financial_data.iex import IexModel
+from financial_data.iex.models import Exchange
+from financial_data.iex.models import IexExchange
+from financial_data.iex.models import IexSymbol
+from financial_data.iex.models import Symbol
 from financial_data.tasks import Task
 from financial_data.tasks.database import UpsertTask
 
@@ -20,12 +20,12 @@ extract_us_exchanges = IexApiTask(endpoint="/ref-data/market/us/exchanges")
 
 
 class TransformRefData(Task):
-    def run(self, data: dict, model: Type[BaseModel]) -> dict:
+    def run(self, data: dict, model: Type[IexModel]) -> Dict[str, Any]:  # type: ignore
         return model(**data).dict()
 
 
 class SymbolsTransformRefData(Task):
-    def run(self, data: dict, model: Type[BaseModel]) -> dict:
+    def run(self, data: dict, model: Type[IexSymbol]) -> dict:  # type: ignore
         # TODO Make sure exchanges in DB.
         del data["exchange"]
         return model(**data).dict()

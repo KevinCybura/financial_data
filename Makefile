@@ -30,7 +30,7 @@ migrate:
 db: dropdb createdb migrate
 
 mypy:
-	mypy financial_data --config-file mypy.ini
+	mypy financial_data flows --config-file mypy.ini
 
 deploy-build:
 	pip install toml && python -c 'import toml; c = toml.load("pyproject.toml"); \
