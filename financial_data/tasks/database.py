@@ -1,35 +1,34 @@
+from typing import Any
 from typing import List
+from typing import Sequence
 from typing import Type
 
-from prefect.tasks.postgres import PostgresExecute
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.sql.expression import Select
 
 from financial_data.db import DataBase
-from financial_data.db import PostgresSettings
 from financial_data.tasks import Task
 from financial_data.types import Col
 from financial_data.types import Table
 
 # mypy: ignore-errors
 
-# WIP
-class PostgresTask(PostgresExecute):
-    def __init__(self, model: Type[Table], conflict_columns: List[Col] = None, **kwargs):
-        self.settings = PostgresSettings()
-        query = self.build_query(model, kwargs.pop("data"), conflict_columns)
-        super().__init__(query=query, **self.settings.dict(), **kwargs)
 
-    def build_query(self, model: Type[Table], data: List[Table], conflict_columns: List[Col]):
-        if conflict_columns is None:
-            conflict_columns = [model.id]
+class SelectTask(Task):
+    def __init__(self, **kwargs: Any):
+        super().__init__(**kwargs)
+        self.database = DataBase()
 
-        stmt = postgresql.insert(model.__table__).values(data)
-        update_stmt = stmt.on_conflict_do_update(index_elements=[conflict_columns], set_=stmt.excluded)
-        return update_stmt
+    def run(self) -> Sequence[Table]:
+        with self.database.session as session:
+            return session.execute(self.query).scalars().all()
+
+    def query(self) -> Select:
+        raise NotImplementedError
 
 
 class UpsertTask(Task):
-    def __init__(self, model: Type[Table], conflict_columns: List[Col] = None, **kwargs):
+    def __init__(self, model: Type[Table], conflict_columns: List[Col] = None, **kwargs: Any):
         self.database = DataBase()
         self.table_name = model.__table__
         self.model = model
@@ -38,7 +37,8 @@ class UpsertTask(Task):
         self.conflict_columns = conflict_columns
         super().__init__(**kwargs)
 
-    def run(self, data: List[dict]):
+    def run(self, data: List[dict]) -> None:
+
         stmt = postgresql.insert(self.table_name).values(data)
         update_stmt = stmt.on_conflict_do_update(index_elements=self.conflict_columns, set_=stmt.excluded)
         self.database.engine.execute(update_stmt)
