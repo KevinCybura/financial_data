@@ -42,7 +42,7 @@ class Symbol(ModelBase):
     id = Column(Integer, primary_key=True)
     symbol = Column(String, unique=True)
     exchange_id = Column(String, ForeignKey("exchange.exchange"), nullable=True)
-    exchange: "Exchange" = relationship("Exchange", backref=backref("symbols"))
+    exchange = relationship("Exchange", backref=backref("symbols"))  # type: ignore
     name = Column(String)
     date = Column(Date)
     is_enabled = Column(Boolean)

@@ -3,7 +3,7 @@ from typing import Any
 import requests
 from prefect import Task
 
-from financial_data.iex import IexSettings
+from financial_data.iex.settings import IexSettings
 
 
 class IexApiTask(Task):

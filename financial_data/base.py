@@ -35,7 +35,7 @@ class BaseSettings(PydanticBaseSettings):
 
 class BaseModel(PydanticBaseModel):
     class Config:
-        model: Type[Table] = None
+        model: Type[Table] = None  # type: ignore
 
     def to_model(self) -> Table:
         return self.Config.model(**self.dict())
@@ -51,7 +51,7 @@ class PrefectSettings:
         for field in settings.__fields__.values():
             for env_name in field.field_info.extra["env_names"]:
                 try:
-                    env_val = PrefectSecret(env_name).run()
+                    env_val = PrefectSecret(env_name).run()  # type: ignore
                     d[field.alias] = env_val
                     break
                 except ValueError:

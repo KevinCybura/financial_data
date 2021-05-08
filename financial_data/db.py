@@ -17,7 +17,7 @@ class PostgresSettings(BaseSettings):
     host: SecretStr = Field("localhost")
     port: SecretStr = Field(5432)
     database: SecretStr = Field("fin_data")
-    url: PostgresDsn = None
+    url: PostgresDsn = None  # type: ignore
 
     class Config(BaseSettings.Config):
         env_prefix = "postgres_"
@@ -44,6 +44,8 @@ class DataBase:
         else:
             self.settings = PostgresSettings(database=database, user=user, password=password, host=host, port=port)
 
-        self.engine: Engine = create_engine(self.settings.url)
-        session = sessionmaker()
-        self.session: Session = session(bind=self.engine)
+        self.engine = create_engine(self.settings.url)
+
+    @property
+    def session(self) -> Session:
+        return Session(self.engine)

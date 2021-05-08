@@ -8,12 +8,14 @@ test:
 	poetry run pytest
 
 fmt:
-	isort .
-	black .
+	poetry run isort .
+	poetry run black .
 
-prefect:
-	prefect server start --postgres-port 5433 -d
-	prefect agent local start -l iex-ref-data --no-hostname-label --show-flow-logs
+prefect-server:
+	poetry run prefect server start --postgres-port 5433 -d
+
+prefect-agent:
+	poetry run prefect agent local start -l iex-data --no-hostname-label --show-flow-logs
 
 createdb:
 	createuser -s fin_data
@@ -25,12 +27,12 @@ dropdb:
 	dropuser --if-exists fin_data
 
 migrate:
-	alembic upgrade head
+	poetry run alembic upgrade head
 
 db: dropdb createdb migrate
 
 mypy:
-	mypy financial_data flows --config-file mypy.ini
+	poetry run mypy financial_data flows --config-file mypy.ini
 
 deploy-build:
 	pip install toml && python -c 'import toml; c = toml.load("pyproject.toml"); \
