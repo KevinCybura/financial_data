@@ -1,9 +1,9 @@
 from sqlalchemy import Column
 from sqlalchemy import String
 
-from financial_data.base import BaseModel
-from financial_data.base import ModelBase
-from financial_data.utils import to_camel
+from financial_data.core import BaseModel
+from financial_data.core import ModelBase
+from financial_data.core.utils import to_camel
 
 
 class Exchange(ModelBase):

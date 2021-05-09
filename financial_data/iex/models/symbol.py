@@ -1,6 +1,5 @@
 import enum
 from datetime import date
-from typing import TYPE_CHECKING
 from typing import Optional
 
 from pydantic import Field
@@ -14,12 +13,9 @@ from sqlalchemy import String
 from sqlalchemy.orm import backref
 from sqlalchemy.orm import relationship
 
-from financial_data.base import BaseModel
-from financial_data.base import ModelBase
-from financial_data.utils import to_camel
-
-if TYPE_CHECKING:
-    from financial_data.iex.models import Exchange
+from financial_data.core import BaseModel
+from financial_data.core import ModelBase
+from financial_data.core.utils import to_camel
 
 
 class SymbolTypes(enum.Enum):
@@ -42,7 +38,7 @@ class Symbol(ModelBase):
     id = Column(Integer, primary_key=True)
     symbol = Column(String, unique=True)
     exchange_id = Column(String, ForeignKey("exchange.exchange"), nullable=True)
-    exchange = relationship("Exchange", backref=backref("symbols"))  # type: ignore
+    exchange: "Exchange" = relationship("Exchange", backref=backref("symbols"))  # type: ignore
     name = Column(String)
     date = Column(Date)
     is_enabled = Column(Boolean)

@@ -2,7 +2,7 @@ from sqlalchemy.sql.schema import Column
 from sqlalchemy.sql.sqltypes import Integer
 from sqlalchemy.sql.sqltypes import String
 
-from financial_data.base import ModelBase
+from financial_data.core import ModelBase
 
 
 class UsExchange(ModelBase):

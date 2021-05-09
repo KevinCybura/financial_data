@@ -4,8 +4,8 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
-from financial_data.base import ModelBase
-from financial_data.db import PostgresSettings
+from financial_data.config.common import POSTGRES_SETTINGS
+from financial_data.core.base import ModelBase
 from financial_data.iex.models import Exchange
 from financial_data.iex.models import Symbol
 from financial_data.iex.models import UsExchange
@@ -13,7 +13,6 @@ from financial_data.iex.models import UsExchange
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-postgres_config = PostgresSettings()
 
 
 # Interpret the config file for Python logging.
@@ -43,7 +42,7 @@ def run_migrations_offline():
     script output.
 
     """
-    url = postgres_config.url
+    url = POSTGRES_SETTINGS.url
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -63,7 +62,7 @@ def run_migrations_online():
 
     """
     section = config.get_section(config.config_ini_section)
-    section["sqlalchemy.url"] = postgres_config.url
+    section["sqlalchemy.url"] = POSTGRES_SETTINGS.url
 
     connectable = engine_from_config(
         section,

@@ -1,12 +1,12 @@
 from typing import Any
 
 import requests
-from prefect import Task
 
-from financial_data.iex.settings import IexSettings
+from financial_data.core.tasks import BaseTask
+from financial_data.iex import IexSettings
 
 
-class IexApiTask(Task):
+class IexApiTask(BaseTask):
     def __init__(self, endpoint: str, **kwargs: Any):
         self.secrets = IexSettings()
         self.endpoint = endpoint
