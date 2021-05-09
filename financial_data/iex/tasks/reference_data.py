@@ -4,32 +4,33 @@ from typing import Type
 
 from sqlalchemy import select
 
-from financial_data.db import DataBase
+from financial_data.core.database import DataBase
+from financial_data.core.tasks import BaseTask
+from financial_data.core.types import Record
+from financial_data.core.types import Skip
 from financial_data.iex import IexModel
 from financial_data.iex.models import Exchange
 from financial_data.iex.models import IexSymbol
-from financial_data.tasks import SkipRecordException
-from financial_data.tasks import Task
 
 
-class TransformRefData(Task):
-    def run(self, data: dict, model: Type[IexModel]) -> dict:  # type: ignore[override]
+class TransformRefData(BaseTask):
+    def run(self, data: dict, model: Type[IexModel]) -> Record:  # type: ignore[override]
         return model(**data).dict()
 
 
-class SymbolsTransformRefData(Task):
-    def run(self, data: dict, exchanges: Set[Exchange], model: Type[IexSymbol]) -> dict:  # type: ignore[override]
+class SymbolsTransformRefData(BaseTask):
+    def run(self, data: dict, exchanges: Set[Exchange], model: Type[IexSymbol]) -> Record:  # type: ignore[override]
         validated_data = model(**data)
         if validated_data.exchange_id not in exchanges:
-            raise SkipRecordException
+            return Skip(validated_data.dict())
         return validated_data.dict()
 
 
-class SelectExchanges(Task):
+class SelectExchanges(BaseTask):
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
         self.database = DataBase()
 
     def run(self) -> Set[str]:  # type: ignore[override]
-        with self.database.session as session:
+        with self.database as session:
             return set(session.execute(select(Exchange.exchange)).scalars())

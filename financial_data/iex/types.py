@@ -1,6 +1,6 @@
 from typing import Union
 
-from .models.exchange import IexExchange
-from .models.symbol import IexSymbol
+from .models import IexExchange
+from .models import IexSymbol
 
 IexModel = Union[IexSymbol, IexExchange]

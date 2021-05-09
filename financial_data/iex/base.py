@@ -2,7 +2,7 @@ from pydantic import Field
 from pydantic import HttpUrl
 from pydantic import SecretStr
 
-from financial_data.base import BaseSettings
+from financial_data.core import BaseSettings
 
 
 class IexSettings(BaseSettings):

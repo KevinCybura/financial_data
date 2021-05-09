@@ -1,13 +1,17 @@
+from typing import Optional
+
 from pydantic import Field
 from pydantic import PostgresDsn
 from pydantic import SecretStr
 from pydantic import validator
 from sqlalchemy import create_engine
-from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import sessionmaker
 
-from financial_data.base import BaseSettings
+from .base import BaseSettings
+from .types import SomeException
+from .types import SomeExceptionType
+from .types import SomeTracebackType
 
 
 class PostgresSettings(BaseSettings):
@@ -37,8 +41,16 @@ class PostgresSettings(BaseSettings):
 
 class DataBase:
     def __init__(
-        self, *, database: str = None, user: str = None, password: str = None, host: str = None, port: str = None
+        self,
+        *,
+        database: str = None,
+        user: str = None,
+        password: str = None,
+        host: str = None,
+        port: str = None,
+        settings: PostgresSettings = None,
     ):
+        self.settings = settings
         if not all([database, user, password, host, port]):
             self.settings = PostgresSettings()
         else:
@@ -46,6 +58,12 @@ class DataBase:
 
         self.engine = create_engine(self.settings.url)
 
-    @property
-    def session(self) -> Session:
-        return Session(self.engine)
+        self.session_cls = sessionmaker(self.engine)
+
+    def __enter__(self) -> Session:
+        self._session = self.session_cls()
+        return self._session
+
+    def __exit__(self, _: SomeExceptionType, _exc: SomeException, _tb: SomeTracebackType) -> Optional[bool]:
+        self._session.close()
+        return None
