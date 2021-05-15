@@ -14,8 +14,8 @@ from sqlalchemy.orm import backref
 from sqlalchemy.orm import relationship
 
 from financial_data.core import BaseModel
-from financial_data.core import ModelBase
 from financial_data.core.utils import to_camel
+from financial_data.iex.models.meta import IexBase
 
 
 class SymbolTypes(enum.Enum):
@@ -32,10 +32,7 @@ class SymbolTypes(enum.Enum):
     wt = "wt"
 
 
-class Symbol(ModelBase):
-    __tablename__ = "symbol"
-
-    id = Column(Integer, primary_key=True)
+class Symbol(IexBase):
     symbol = Column(String, unique=True)
     exchange_id = Column(String, ForeignKey("exchange.exchange"), nullable=True)
     exchange: "Exchange" = relationship("Exchange", backref=backref("symbols"))  # type: ignore

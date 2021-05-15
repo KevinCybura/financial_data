@@ -3,6 +3,7 @@ from typing import Any
 from typing import MutableMapping
 from typing import Optional
 from typing import Type
+from typing import TypeVar
 from typing import Union
 
 from sqlalchemy import Column
@@ -12,6 +13,9 @@ from financial_data.core.base import ModelBase
 
 OptionalStr = Optional[str]
 
+ModelType = TypeVar("ModelType", bound=ModelBase)
+CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
+UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 # SQL alchemy types.
 Col = Union[Column, str]
 Table = ModelBase

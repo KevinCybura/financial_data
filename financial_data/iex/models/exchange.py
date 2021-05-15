@@ -2,14 +2,12 @@ from sqlalchemy import Column
 from sqlalchemy import String
 
 from financial_data.core import BaseModel
-from financial_data.core import ModelBase
 from financial_data.core.utils import to_camel
+from financial_data.iex.models.meta import IexBase
 
 
-class Exchange(ModelBase):
-    __tablename__ = "exchange"
-
-    exchange = Column(String, primary_key=True)
+class Exchange(IexBase):
+    exchange = Column(String, unique=True)
     region = Column(String)
     description = Column(String)
     mic = Column(String)

@@ -8,10 +8,34 @@ from prefect.tasks.secrets import PrefectSecret
 from pydantic import BaseModel as PydanticBaseModel
 from pydantic import BaseSettings as PydanticBaseSettings
 from pydantic.env_settings import SettingsSourceCallable
+from sqlalchemy import Column
+from sqlalchemy import DateTime
+from sqlalchemy import Integer
 from sqlalchemy import Table
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import func
+from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import deferred
+from sqlalchemy.orm.decl_api import as_declarative
+from sqlalchemy.orm.decl_api import declared_attr
 
-ModelBase = declarative_base(name="ModelBase")
+
+@as_declarative()
+class ModelBase:
+    @declared_attr
+    def __tablename__(self) -> Mapped[str]:
+        return self.__name__.lower()
+
+    @declared_attr
+    def id(self) -> Mapped[Integer]:
+        return Column(Integer, autoincrement=True, primary_key=True)
+
+    @declared_attr
+    def created_at(self) -> Mapped[DateTime]:
+        return deferred(Column(DateTime, default=func.now()))
+
+    @declared_attr
+    def updated_at(self) -> Mapped[DateTime]:
+        return deferred(Column(DateTime, onupdate=func.now()))
 
 
 class BaseSettings(PydanticBaseSettings):
@@ -35,10 +59,10 @@ class BaseSettings(PydanticBaseSettings):
 
 class BaseModel(PydanticBaseModel):
     class Config:
-        model: Type[Table] = None  # type: ignore
+        model: Optional[Type[Table]] = None
 
     def to_model(self) -> Table:
-        return self.Config.model(**self.dict())
+        return self.Config.model(**self.dict())  # type: ignore
 
 
 class PrefectSettings:
