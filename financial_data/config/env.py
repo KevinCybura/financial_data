@@ -1,4 +1,6 @@
+from collections import Callable
 from logging.config import fileConfig
+from typing import Optional
 
 from alembic import context
 from sqlalchemy import MetaData
@@ -13,17 +15,17 @@ config = context.config
 fileConfig(config.config_file_name)
 
 
-def _include_object(target_schema):
-    def include_object(obj, name, object_type, reflected, compare_to):
+def _include_object(target_schema: Optional[str]) -> Callable:
+    def include_object(obj: MetaData, name: str, object_type: str, reflected: str, compare_to: str) -> bool:
         if object_type == "table":
-            return obj.schema in target_schema
+            return obj.schema == target_schema
         else:
             return True
 
     return include_object
 
 
-def _run_migrations_offline(target_metadata, schema):
+def _run_migrations_offline(target_metadata: MetaData, schema: Optional[str]) -> None:
     """Run migrations in 'offline' mode.
 
     This configures the context with just a URL
@@ -48,7 +50,7 @@ def _run_migrations_offline(target_metadata, schema):
         context.run_migrations()
 
 
-def _run_migrations_online(target_metadata, schema):
+def _run_migrations_online(target_metadata: MetaData, schema: Optional[str]) -> None:
     """Run migrations in 'online' mode.
 
     In this scenario we need to create an Engine
@@ -75,7 +77,7 @@ def _run_migrations_online(target_metadata, schema):
             context.run_migrations()
 
 
-def run_migrations(metadata: MetaData, schema: str):
+def run_migrations(metadata: MetaData, schema: Optional[str]) -> None:
     if context.is_offline_mode():
         _run_migrations_offline(metadata, schema)
     else:

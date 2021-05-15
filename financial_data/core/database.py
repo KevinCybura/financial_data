@@ -1,4 +1,6 @@
+from typing import Generic
 from typing import Optional
+from typing import Type
 
 from pydantic import Field
 from pydantic import PostgresDsn
@@ -9,9 +11,12 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm import sessionmaker
 
 from .base import BaseSettings
+from .types import CreateSchemaType
+from .types import ModelType
 from .types import SomeException
 from .types import SomeExceptionType
 from .types import SomeTracebackType
+from .types import UpdateSchemaType
 
 
 class PostgresSettings(BaseSettings):
@@ -67,3 +72,17 @@ class DataBase:
     def __exit__(self, _: SomeExceptionType, _exc: SomeException, _tb: SomeTracebackType) -> Optional[bool]:
         self._session.close()
         return None
+
+
+class DataModelBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
+    def __init__(self, model: Type[ModelType]):
+        self.model = model
+
+    def create(self) -> None:
+        pass
+
+    def update(self) -> None:
+        pass
+
+    def upsert(self) -> None:
+        pass

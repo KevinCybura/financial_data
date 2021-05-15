@@ -11,9 +11,11 @@ from pydantic.env_settings import SettingsSourceCallable
 from sqlalchemy import Column
 from sqlalchemy import DateTime
 from sqlalchemy import Integer
+from sqlalchemy import String
 from sqlalchemy import Table
 from sqlalchemy import func
 from sqlalchemy.orm import ColumnProperty
+from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import deferred
 from sqlalchemy.orm.decl_api import as_declarative
 from sqlalchemy.orm.decl_api import declared_attr
@@ -21,24 +23,20 @@ from sqlalchemy.orm.decl_api import declared_attr
 
 @as_declarative()
 class ModelBase:
-    id = Column(Integer, autoincrement=True, primary_key=True)
-    created_at = deferred(Column(DateTime, default=func.now()))
-    updated_at = deferred(Column(DateTime, onupdate=func.now()))
-
     @declared_attr
-    def __tablename__(self) -> str:
+    def __tablename__(self) -> Mapped[str]:
         return self.__name__.lower()
 
     @declared_attr
-    def id(self) -> Column:
+    def id(self) -> Column[Integer]:
         return Column(Integer, autoincrement=True, primary_key=True)
 
     @declared_attr
-    def created_at(self) -> ColumnProperty:
+    def created_at(self) -> Column[DateTime]:
         return deferred(Column(DateTime, default=func.now()))
 
     @declared_attr
-    def updated_at(self) -> ColumnProperty:
+    def updated_at(self) -> Column[DateTime]:
         return deferred(Column(DateTime, onupdate=func.now()))
 
 
@@ -66,7 +64,7 @@ class BaseModel(PydanticBaseModel):
         model: Optional[Type[Table]] = None
 
     def to_model(self) -> Table:
-        return self.Config.model(**self.dict())
+        return self.Config.model(**self.dict())  # type: ignore
 
 
 class PrefectSettings:
