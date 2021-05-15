@@ -1,36 +1,29 @@
 from logging.config import fileConfig
 
+from alembic import context
+from sqlalchemy import MetaData
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
-from alembic import context
 from financial_data.config.common import POSTGRES_SETTINGS
-from financial_data.core.base import ModelBase
-from financial_data.iex.models import Exchange
-from financial_data.iex.models import Symbol
-from financial_data.iex.models import UsExchange
 
-# this is the Alembic Config object, which provides
-# access to the values within the .ini file in use.
 config = context.config
 
 
-# Interpret the config file for Python logging.
-# This line sets up loggers basically.
 fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-target_metadata = ModelBase.metadata
 
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
+def _include_object(target_schema):
+    def include_object(obj, name, object_type, reflected, compare_to):
+        if object_type == "table":
+            return obj.schema in target_schema
+        else:
+            return True
+
+    return include_object
 
 
-def run_migrations_offline():
+def _run_migrations_offline(target_metadata, schema):
     """Run migrations in 'offline' mode.
 
     This configures the context with just a URL
@@ -47,37 +40,43 @@ def run_migrations_offline():
         url=url,
         target_metadata=target_metadata,
         literal_binds=True,
-        dialect_opts={"paramstyle": "named"},
+        include_schemas=True,
+        include_object=_include_object(schema),
+        compare_type=True,
     )
-
     with context.begin_transaction():
         context.run_migrations()
 
 
-def run_migrations_online():
+def _run_migrations_online(target_metadata, schema):
     """Run migrations in 'online' mode.
 
     In this scenario we need to create an Engine
     and associate a connection with the context.
 
     """
-    section = config.get_section(config.config_ini_section)
-    section["sqlalchemy.url"] = POSTGRES_SETTINGS.url
-
     connectable = engine_from_config(
-        section,
+        config.get_section(config.config_ini_section),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        url=POSTGRES_SETTINGS.url,
     )
 
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+            include_schemas=True,  # 2
+            include_object=_include_object(schema),  # 2
+            compare_type=True,
+        )
 
         with context.begin_transaction():
             context.run_migrations()
 
 
-if context.is_offline_mode():
-    run_migrations_offline()
-else:
-    run_migrations_online()
+def run_migrations(metadata: MetaData, schema: str):
+    if context.is_offline_mode():
+        _run_migrations_offline(metadata, schema)
+    else:
+        _run_migrations_online(metadata, schema)
