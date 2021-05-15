@@ -27,7 +27,7 @@ dropdb:
 	dropuser --if-exists fin_data
 
 migrate:
-	poetry run alembic upgrade head
+	poetry run python manage.py migrate iex
 
 db: dropdb createdb migrate
 
