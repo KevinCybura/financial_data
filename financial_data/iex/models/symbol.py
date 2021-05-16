@@ -8,7 +8,6 @@ from sqlalchemy import Column
 from sqlalchemy import Date
 from sqlalchemy import Enum
 from sqlalchemy import ForeignKey
-from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy.orm import backref
 from sqlalchemy.orm import relationship
@@ -18,7 +17,7 @@ from financial_data.core.utils import to_camel
 from financial_data.iex.models.meta import IexBase
 
 
-class SymbolTypes(enum.Enum):
+class SymbolTypes(str, enum.Enum):
     ad = "ad"
     cs = "cs"
     cef = "cef"
@@ -30,6 +29,7 @@ class SymbolTypes(enum.Enum):
     ut = "ut"
     wi = "wi"
     wt = "wt"
+    crypto = "crypto"
 
 
 class Symbol(IexBase):
@@ -67,3 +67,4 @@ class IexSymbol(BaseModel):
     class Config:
         alias_generator = to_camel
         model = Symbol
+        allow_population_by_field_name = True

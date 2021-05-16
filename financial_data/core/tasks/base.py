@@ -5,6 +5,7 @@ from typing import Optional
 from typing import Sequence
 
 from prefect import Task as PrefectTask
+from prefect import unmapped
 
 from financial_data.core.types import Record
 from financial_data.core.types import Skip
@@ -15,20 +16,23 @@ class BaseTask(PrefectTask):
         super().__init__(**kwargs)
         self.kw = kwargs
 
-    def filter_map_records(self, dataset: Iterable[Record], **kwargs: Any) -> "PrefectTask":
+    def filter_map_records(self, dataset: Iterable[Record], **kwargs: Any) -> PrefectTask:
         return FilterMapTask(**self.kw)(dataset, self.run, **kwargs)
 
-    def map_records(self, dataset: Iterable[Record], **kwargs: Any) -> "PrefectTask":
+    def map_records(self, dataset: Iterable[Record], **kwargs: Any) -> PrefectTask:
         return MapTask(**self.kw)(dataset, self.run, **kwargs)
 
     def filter_records(self, dataset: Iterable[Record], **kwargs: Any) -> "PrefectTask":
         return FilterTask(**self.kw)(dataset, self.run, **kwargs)
 
+    def filter_map_datasets(self, datasets: PrefectTask, **kwargs: Any) -> PrefectTask:
+        return FilterMapTask(**self.kw).map(datasets, run=unmapped(self.run), **kwargs)
+
 
 class MapTask(BaseTask):
     def run(self, dataset: Iterable[Record], run: Callable[..., Record], **kwargs: Any) -> Optional[Sequence[Record]]:  # type: ignore[override]
         """ If the run method is defined to take one element apply the run function to each record. """
-        return [run(data) for data in dataset]
+        return [run(data, **kwargs) for data in dataset]
 
 
 class FilterTask(BaseTask):
@@ -39,7 +43,7 @@ class FilterTask(BaseTask):
         """
         filtered_dataset = []
         for data in dataset:
-            if run(data):
+            if run(data, **kwargs):
                 filtered_dataset.append(data)
 
         return filtered_dataset

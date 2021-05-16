@@ -1,15 +1,15 @@
 """'initial migration'
 
-Revision ID: 9cc2e0d1b95a
+Revision ID: 7bd1eff2af2b
 Revises: 
-Create Date: 2021-05-15 16:00:59.339299
+Create Date: 2021-05-16 13:59:53.685952
 
 """
 import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "9cc2e0d1b95a"
+revision = "7bd1eff2af2b"
 down_revision = None
 branch_labels = ("iex",)
 depends_on = None
@@ -61,7 +61,9 @@ def upgrade():
         sa.Column("cik", sa.String(), nullable=True),
         sa.Column(
             "type",
-            sa.Enum("ad", "cs", "cef", "et", "oef", "ps", "rt", "struct", "ut", "wi", "wt", name="symbol_type"),
+            sa.Enum(
+                "ad", "cs", "cef", "et", "oef", "ps", "rt", "struct", "ut", "wi", "wt", "crypto", name="symbol_type"
+            ),
             nullable=True,
         ),
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
