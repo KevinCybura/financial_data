@@ -1,3 +1,2 @@
-from .base import IexSettings
-from .tasks import IexApiTask
-from .types import IexModel
+from financial_data.iex.tasks import IexApiTask
+from financial_data.iex.types import IexModel

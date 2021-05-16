@@ -1,3 +1,3 @@
-from .base import BaseModel
-from .base import BaseSettings
-from .base import ModelBase
+from financial_data.core.base import BaseModel
+from financial_data.core.base import BaseSettings
+from financial_data.core.base import ModelBase

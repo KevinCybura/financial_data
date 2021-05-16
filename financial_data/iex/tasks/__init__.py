@@ -1,1 +1,1 @@
-from .api import IexApiTask
+from financial_data.iex.tasks.api import IexApiTask

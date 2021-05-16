@@ -1,11 +1,13 @@
 import os
 from enum import Enum
 
+from pydantic import Field
+from pydantic import HttpUrl
+from pydantic import SecretStr
+
+from financial_data.core import BaseSettings
 from financial_data.core.database import DataBase
 from financial_data.core.database import PostgresSettings
-from financial_data.iex import IexSettings
-
-IEX_SETTINGS = IexSettings()
 
 POSTGRES_SETTINGS = PostgresSettings()
 DATABASE = DataBase(
@@ -24,3 +26,17 @@ class EnvType(Enum):
 
 # TODO: figure out how to set AGENT_ENVIRONMENT using prefect secrets here.
 ENVIRONMENT = EnvType(os.environ.get("AGENT_ENVIRONMENT", "local"))
+
+
+class IexSettings(BaseSettings):
+    token: SecretStr
+    url: HttpUrl = Field("https://sandbox.iexapis.com")
+    _sandbox: bool = None  # type: ignore
+
+    class Config(BaseSettings.Config):
+        env_prefix = "iex_"
+        case_sensitive = False
+        prefect_secrets = False
+
+
+IEX_SETTINGS = IexSettings()
